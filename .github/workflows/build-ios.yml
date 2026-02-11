@@ -46,25 +46,23 @@ jobs:
       run: |
         npx cap add ios || true
     
-    - name: Fix iOS Deployment Target in Podfile
+    - name: Check and Fix Podfile
       run: |
         cd ios/App
-        # Update Podfile to use iOS 14
-        sed -i.bak "s/platform :ios, '.*'/platform :ios, '14.0'/g" Podfile
-        rm -f Podfile.bak
+        echo "=== ORIGINAL PODFILE ==="
         cat Podfile
-    
-    - name: Fix Project Settings
-      run: |
-        cd ios/App
-        # Update project.pbxproj to use iOS 14
-        sed -i.bak 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/g' App.xcodeproj/project.pbxproj
-        rm -f App.xcodeproj/project.pbxproj.bak
+        echo "========================"
+        
+        # Replace platform line with iOS 14.0
+        sed -i.bak 's/^platform :ios.*/platform :ios, '\''14.0'\''/g' Podfile
+        
+        echo "=== FIXED PODFILE ==="
+        cat Podfile
+        echo "====================="
     
     - name: Install Pods
       run: |
         cd ios/App
-        pod deintegrate || true
         pod install --repo-update
     
     - name: Sync Capacitor

@@ -41,17 +41,18 @@ jobs:
         }
         EOF
     
-    - name: Add iOS Platform
+    - name: Add iOS Platform (no sync)
       run: |
         npm install @capacitor/ios --save
-        npx cap add ios
+        npx cap add ios --skip-sync
     
     - name: Fix Podfile Deployment Target
       run: |
         cd ios/App
-        cat Podfile
-        sed -i.bak 's/platform :ios, .*/platform :ios, '\''14.0'\''/g' Podfile
+        # Replace any iOS version with 14.0
+        sed -i.bak 's/platform :ios, [^)]*/platform :ios, '\''14.0'\''/g' Podfile
         rm -f Podfile.bak
+        echo "=== Fixed Podfile ==="
         cat Podfile
     
     - name: Install Pods
@@ -61,7 +62,7 @@ jobs:
     
     - name: Sync Capacitor
       run: |
-        npx cap sync ios
+        npx cap sync ios --deployment false
     
     - name: Upload iOS Project
       uses: actions/upload-artifact@v4

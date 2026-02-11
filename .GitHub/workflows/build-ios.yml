@@ -1,0 +1,44 @@
+name: Build iOS App
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install Capacitor
+      run: |
+        npm install -g @capacitor/cli @capacitor/core @capacitor/ios
+    
+    - name: Initialize Capacitor
+      run: |
+        cd mobile/case-opener
+        npx cap init FoodCases com.cameronsgit7.foodcases --web-dir . --skip-npm-install
+    
+    - name: Add iOS Platform
+      run: |
+        cd mobile/case-opener
+        npm install @capacitor/ios --save
+        npx cap add ios
+    
+    - name: Build iOS Project
+      run: |
+        cd mobile/case-opener
+        npx cap sync ios
+    
+    - name: Upload iOS Project
+      uses: actions/upload-artifact@v3
+      with:
+        name: ios-project
+        path: mobile/case-opener/ios/

@@ -10,10 +10,10 @@ jobs:
     runs-on: macos-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
     
@@ -23,22 +23,19 @@ jobs:
     
     - name: Initialize Capacitor
       run: |
-        cd mobile/case-opener
         npx cap init FoodCases com.cameronsgit7.foodcases --web-dir . --skip-npm-install
     
     - name: Add iOS Platform
       run: |
-        cd mobile/case-opener
         npm install @capacitor/ios --save
         npx cap add ios
     
     - name: Build iOS Project
       run: |
-        cd mobile/case-opener
         npx cap sync ios
     
     - name: Upload iOS Project
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ios-project
-        path: mobile/case-opener/ios/
+        path: ios/

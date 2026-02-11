@@ -17,9 +17,9 @@ jobs:
       with:
         node-version: '18'
     
-    - name: Install Capacitor
+    - name: Install Capacitor v5 (supports iOS 13)
       run: |
-        npm install -g @capacitor/cli @capacitor/core @capacitor/ios
+        npm install -g @capacitor/cli@5 @capacitor/core@5 @capacitor/ios@5
     
     - name: Create build directory and copy files
       run: |
@@ -38,36 +38,17 @@ jobs:
         }
         EOF
     
-    - name: Install iOS Platform
+    - name: Install iOS Platform v5
       run: |
-        npm install @capacitor/ios --save
+        npm install @capacitor/ios@5 --save
     
     - name: Add iOS Platform
       run: |
-        npx cap add ios || true
-    
-    - name: Check and Fix Podfile
-      run: |
-        cd ios/App
-        echo "=== ORIGINAL PODFILE ==="
-        cat Podfile
-        echo "========================"
-        
-        # Replace platform line with iOS 14.0
-        sed -i.bak 's/^platform :ios.*/platform :ios, '\''14.0'\''/g' Podfile
-        
-        echo "=== FIXED PODFILE ==="
-        cat Podfile
-        echo "====================="
-    
-    - name: Install Pods
-      run: |
-        cd ios/App
-        pod install --repo-update
+        npx cap add ios
     
     - name: Sync Capacitor
       run: |
-        npx cap copy ios
+        npx cap sync ios
     
     - name: Upload iOS Project
       uses: actions/upload-artifact@v4

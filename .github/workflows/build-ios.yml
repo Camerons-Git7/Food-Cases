@@ -50,8 +50,18 @@ jobs:
       run: |
         npx cap sync ios
     
+    - name: List iOS directory
+      run: |
+        ls -la ios/
+        ls -la ios/App/
+    
     - name: Upload iOS Project
       uses: actions/upload-artifact@v4
       with:
         name: ios-project
-        path: ios/
+        path: |
+          ios/
+          !ios/App/Pods/
+          !ios/App/build/
+          !ios/App/DerivedData/
+        retention-days: 5

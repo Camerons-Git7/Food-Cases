@@ -21,9 +21,16 @@ jobs:
       run: |
         npm install -g @capacitor/cli @capacitor/core @capacitor/ios
     
+    - name: Create build directory and copy files
+      run: |
+        mkdir -p www
+        cp *.html www/ 2>/dev/null || true
+        cp -r assets www/ 2>/dev/null || true
+    
     - name: Initialize Capacitor
       run: |
-        npx cap init FoodCases com.cameronsgit7.foodcases --web-dir .
+        rm -f capacitor.config.json
+        npx cap init FoodCases com.cameronsgit7.foodcases --web-dir www
     
     - name: Add iOS Platform
       run: |

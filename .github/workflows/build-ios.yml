@@ -34,100 +34,40 @@ jobs:
         {
           "appId": "com.cameronsgit7.foodcases",
           "appName": "FoodCases",
-          "webDir": "www",
-          "ios": {
-            "minVersion": "14.0"
-          }
+          "webDir": "www"
         }
         EOF
     
-    - name: Install iOS Platform Package
+    - name: Install iOS Platform
       run: |
         npm install @capacitor/ios --save
     
-    - name: Manually Create iOS Project
+    - name: Add iOS Platform
       run: |
-        mkdir -p ios/App
+        npx cap add ios || true
+    
+    - name: Fix iOS Deployment Target in Podfile
+      run: |
         cd ios/App
-        
-        # Create Podfile with correct deployment target
-        cat > Podfile << 'EOF'
-        platform :ios, '14.0'
-        use_frameworks!
-        
-        # workaround to avoid Xcode caching of Pods that requires
-        # Product -> Clean Build Folder after new Cordova plugins installed
-        # Requires CocoaPods 1.6 or newer
-        install! 'cocoapods', :disable_input_output_paths => true
-        
-        def capacitor_pods
-          # Automatic Capacitor Pod dependencies, do not delete
-          pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
-          pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
-          # Do not delete
-        end
-        
-        target 'App' do
-          capacitor_pods
-          # Add your Pods here
-        end
-        
-        post_install do |installer|
-          assertDeploymentTarget(installer)
-        end
-        EOF
-        
-        # Create basic Xcode project structure
-        mkdir -p App
-        cat > App/Info.plist << 'EOF'
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-            <key>CFBundleDevelopmentRegion</key>
-            <string>en</string>
-            <key>CFBundleDisplayName</key>
-            <string>FoodCases</string>
-            <key>CFBundleExecutable</key>
-            <string>App</string>
-            <key>CFBundleIdentifier</key>
-            <string>com.cameronsgit7.foodcases</string>
-            <key>CFBundleInfoDictionaryVersion</key>
-            <string>6.0</string>
-            <key>CFBundleName</key>
-            <string>$(PRODUCT_NAME)</string>
-            <key>CFBundlePackageType</key>
-            <string>APPL</string>
-            <key>CFBundleShortVersionString</key>
-            <string>1.0</string>
-            <key>CFBundleVersion</key>
-            <string>1</string>
-            <key>LSRequiresIPhoneOS</key>
-            <true/>
-            <key>UILaunchStoryboardName</key>
-            <string>LaunchScreen</string>
-            <key>UIMainStoryboardFile</key>
-            <string>Main</string>
-            <key>UIRequiredDeviceCapabilities</key>
-            <array>
-                <string>armv7</string>
-            </array>
-            <key>UISupportedInterfaceOrientations</key>
-            <array>
-                <string>UIInterfaceOrientationPortrait</string>
-                <string>UIInterfaceOrientationLandscapeLeft</string>
-                <string>UIInterfaceOrientationLandscapeRight</string>
-            </array>
-        </dict>
-        </plist>
-        EOF
+        # Update Podfile to use iOS 14
+        sed -i.bak "s/platform :ios, '.*'/platform :ios, '14.0'/g" Podfile
+        rm -f Podfile.bak
+        cat Podfile
+    
+    - name: Fix Project Settings
+      run: |
+        cd ios/App
+        # Update project.pbxproj to use iOS 14
+        sed -i.bak 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/g' App.xcodeproj/project.pbxproj
+        rm -f App.xcodeproj/project.pbxproj.bak
     
     - name: Install Pods
       run: |
         cd ios/App
+        pod deintegrate || true
         pod install --repo-update
     
-    - name: Sync Web Assets
+    - name: Sync Capacitor
       run: |
         npx cap copy ios
     

@@ -55,10 +55,49 @@ jobs:
         ls -la ios/
         ls -la ios/App/
     
-    - name: Upload iOS Project
+    - name: Build and Create IPA
+      run: |
+        cd ios/App
+        
+        # Build the archive (unsigned, for simulator/testing)
+        xcodebuild -workspace App.xcworkspace \
+          -scheme App \
+          -configuration Release \
+          -sdk iphoneos \
+          -archivePath build/App.xcarchive \
+          clean archive \
+          CODE_SIGNING_ALLOWED=NO \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+        
+        # Create Payload folder
+        mkdir -p Payload
+        
+        # Copy the .app bundle from archive to Payload
+        cp -r build/App.xcarchive/Products/Applications/App.app Payload/
+        
+        # Create the IPA file (which is just a zip of Payload)
+        zip -r ../../FoodCases.ipa Payload
+        
+        # Cleanup
+        rm -rf Payload
+        
+        # Show what we created
+        ls -lh ../../FoodCases.ipa
+    
+    - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
-        name: ios-project
+        name: FoodCases-IPA
+        path: FoodCases.ipa
+        retention-days: 5
+    
+    - name: Upload iOS Project (for debugging)
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-project-source
         path: |
           ios/
           !ios/App/Pods/
